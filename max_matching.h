@@ -14,7 +14,7 @@ class Edmonds{
 public:
     Edmonds(const ED::Graph &input_graph);
 
-    ED::Graph max_cardinality_matching(const ED::Graph &input_graph);
+    ED::Graph max_cardinality_matching();
 private:
 
     ED::Graph graph;
@@ -25,8 +25,14 @@ private:
     bool is_outer(const ED::NodeId &vertex);
     bool is_inner(const ED::NodeId &vertex);
     bool is_oof(const ED::NodeId &vertex);
+
+    ED::NodeId find_unscanned_outer_vertex();
+    ED::NodeId neighbour_search(ED::NodeId vertex);
+    std::vector<ED::NodeId> maximal_sequence_path(ED::NodeId vertex);
 };
 
+std::vector<ED::NodeId> vector_intersection(const std::vector<ED::NodeId> &v1,
+                                      const std::vector<ED::NodeId> &v2);
 
 
 //BEGIN: Inline section
