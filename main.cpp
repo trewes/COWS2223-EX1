@@ -23,6 +23,7 @@ int main(int argc, char** argv)
 
     ED::Graph matching_edmonds = Edmonds(graph).max_cardinality_matching();
     std::cout << matching_edmonds;
+    std::cout << "Found a matching of size " << matching_edmonds.num_edges() << std::endl;
 
     return EXIT_SUCCESS;
 }

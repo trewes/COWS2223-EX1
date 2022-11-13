@@ -66,15 +66,27 @@ ED::NodeId Edmonds::neighbour_search(ED::NodeId vertex) {
 }
 
 
+//checks if vertex t is already on path
+bool is_already_on_path(const std::vector<ED::NodeId> &path, ED::NodeId t){
+    for(int i = int(path.size())-1; i >= 0; i--){
+        if(path[i] == t){
+            return true;
+        }
+    }
+    return false;
+}
+
+
 std::vector<ED::NodeId> Edmonds::maximal_sequence_path(ED::NodeId vertex) {
     std::vector<ED::NodeId> path{vertex};
 
     //have shown in lecture that the sequence eventually terminated
     //TODO but does it potentially loop and we have to check for a path or is it all equal at some point!
+    //-> yes we have to check it's a path! i.e. doesn't contain loops either
     ED::NodeId t;
     while(true){
         t = mu[path.back()];
-        if(t == path.back()){
+        if(is_already_on_path(path, t)){
             break;
         }
         else {
@@ -82,7 +94,7 @@ std::vector<ED::NodeId> Edmonds::maximal_sequence_path(ED::NodeId vertex) {
         }
 
         t = phi[path.back()];
-        if(t == path.back()){
+        if(is_already_on_path(path, t)){
             break;
         }
         else {
@@ -111,7 +123,7 @@ std::vector<ED::NodeId> vector_intersection(const std::vector<ED::NodeId> &v1,
     // go over second vector and check if an element is in hashset
     //if so, add it to the intersection
     for (const ED::NodeId & j : v2){
-        if (hash_set.find(j) != hash_set.end()){
+        if (hash_set.count(j)){
             intersection.push_back(j);
         }
     }
@@ -123,21 +135,23 @@ std::vector<ED::NodeId> vector_intersection(const std::vector<ED::NodeId> &v1,
 
 ED::Graph Edmonds::max_cardinality_matching() {
 
+    //TODO find greedy/heuristic matching
+
     // while we find an outer vertex x that has scanned(x) == false
     //we iterate over the steps of tha algorithm, otherwise stop
     ED::NodeId x;
-    //TODO type of graph.num_nodes() vs ED::NodeId
+    //OUTER VERTEX SCAN
     while(x = find_unscanned_outer_vertex(), x!= graph.num_nodes()){
 
 neighbourSearch:
         //NEIGHBOUR SEARCH
         ED::NodeId y = neighbour_search(x);
-        //did not find a neighbour with the right property, set scanned(X)=false and break
+        //did not find a neighbour with the right property, set scanned(X)=true and go to outer vertex scan
         if(y == graph.num_nodes()){
-            scanned[x] = false;
-            //TODO actually this should be continue and not break, right?
+            scanned[x] = true;
             continue;
         }
+
 
         //GROW
         if(is_oof(y)){
@@ -145,6 +159,7 @@ neighbourSearch:
             goto neighbourSearch;
         }//TODO do neighbour search after this
 
+//TODO get list of all possible neighbours y and then grow on all out of forest vertices
 
 
 
@@ -155,51 +170,57 @@ neighbourSearch:
         //AUGMENT
         if(intersection.empty()){ //paths are disjoint
             //change mu and phi for all vertices on paths with odd distance from x/y
-            for (unsigned int i = 0; 2*i < P_x.size(); ++i) {
-                ED::NodeId v = P_x[2*i];
+            for (unsigned int i = 0; 2*i + 1 < P_x.size(); ++i) {
+                ED::NodeId v = P_x[2*i + 1];
                 mu[phi[v]] = v;
                 mu[v] =  phi[v];
             }
-            for (unsigned int i = 0; 2*i < P_y.size(); ++i) {
-                ED::NodeId v = P_y[2*i];
+            for (unsigned int i = 0; 2*i + 1 < P_y.size(); ++i) {
+                ED::NodeId v = P_y[2*i + 1];
                 mu[phi[v]] = v;
                 mu[v] =  phi[v];
             }
             //change mu and phi for x and y
             mu[x] = y;
             mu[y] = x;
-            //reset scanned, phi and rho
+            //reset scanned with default value false, phi and rho
             scanned = std::vector<bool>(graph.num_nodes());
             std::iota(phi.begin(), phi.end(), 0);
             std::iota(rho.begin(), rho.end(), 0);
 
             //go to outer vertex scan
-            //TODO actually this should be continue and not break, right?
             continue;
         }
+        //TODO more error catching code
         //SHRINK
         else{
             //find first vertex r in intersection with rho(r)=r
+            //
             auto r_iterator = std::find_if(intersection.begin(), intersection.end(),
-                         [&](ED::NodeId r){return rho[r] == r;});
-            if(r_iterator == intersection.end()){//TODO more error catching code
+                                            [&](ED::NodeId r){return rho[r] == r;});
+            if(r_iterator == intersection.end()){
                 throw std::runtime_error("There is no vertex in the intersection of the Paths"
-                                         "such that rho(r)==r.");
+                                         " such that rho(r)==r.");
             }
             ED::NodeId r = *r_iterator;
             //for v on path P_x,r resp. P_y,r with odd distance from x resp. y, change phi
             auto P_x_iterator_until_r = std::find(P_x.begin(), P_x.end(), r);
             auto P_y_iterator_until_r = std::find(P_y.begin(), P_y.end(), r);
+            if(P_x_iterator_until_r == P_x.end() or P_y_iterator_until_r == P_y.end()){
+                throw std::runtime_error("Could not find element r in one of the paths.");
+            }
+            unsigned int index_r_on_P_x = P_x_iterator_until_r - P_x.begin();
+            unsigned int index_r_on_P_y = P_y_iterator_until_r - P_y.begin();
 
-            //loop over path until r but only take every second vertex
-            for (auto i = P_x.begin(); i < P_x_iterator_until_r; ++i, ++i) {
-                ED::NodeId vertex = *i;
+            //loop over path until r but only take every odd distance vertex
+            for (unsigned int i = 0; 2*i + 1 <= index_r_on_P_x ; ++i) {
+                ED::NodeId vertex = P_x[2*i + 1];
                 if(rho[phi[vertex]] != r){
                     phi[phi[vertex]] = vertex;
                 }
             }
-            for (auto i = P_y.begin(); i < P_y_iterator_until_r; ++i, ++i) {
-                ED::NodeId vertex = *i;
+            for (unsigned int i = 0; 2*i + 1 <= index_r_on_P_y; ++i) {
+                ED::NodeId vertex = P_y[2*i + 1];
                 if(rho[phi[vertex]] != r){
                     phi[phi[vertex]] = vertex;
                 }
