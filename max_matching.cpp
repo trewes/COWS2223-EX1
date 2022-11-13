@@ -136,6 +136,14 @@ std::vector<ED::NodeId> vector_intersection(const std::vector<ED::NodeId> &v1,
 ED::Graph Edmonds::max_cardinality_matching() {
 
     //TODO find greedy/heuristic matching
+    ED::Graph greedy_matching_as_graph = greedy_matching(graph);
+    for (ED::NodeId node_id = 0; node_id < graph.num_nodes(); ++node_id)
+    {
+        if (!greedy_matching_as_graph.node(node_id).neighbors().empty()) 
+        {
+            mu[node_id] = greedy_matching_as_graph.node(node_id).neighbors()[0];
+        }
+    }
 
     // while we find an outer vertex x that has scanned(x) == false
     //we iterate over the steps of tha algorithm, otherwise stop
