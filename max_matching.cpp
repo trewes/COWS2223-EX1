@@ -250,10 +250,10 @@ neighbourSearch:
             for (ED::NodeId v = 0; v < graph.num_nodes(); ++v) {
 
                 //see if rho(v) is in path of x until r
-                if(std::find(P_x.begin(), P_x.end(), phi[v]) <= P_x_iterator_until_r){
+                if(std::find(P_x.begin(), P_x.end(), rho[v]) <= P_x_iterator_until_r){
                     rho[v]= r;
                 }//TODO maybe equality here
-                if(std::find(P_y.begin(), P_y.end(), phi[v]) <= P_y_iterator_until_r){
+                if(std::find(P_y.begin(), P_y.end(), rho[v]) <= P_y_iterator_until_r){
                     rho[v]= r;
                 }
             }
