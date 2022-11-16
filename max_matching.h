@@ -27,8 +27,10 @@ private:
     bool is_oof(const ED::NodeId &vertex);
 
     ED::NodeId find_unscanned_outer_vertex();
-    ED::NodeId neighbour_search(ED::NodeId vertex);
-    std::vector<ED::NodeId> maximal_sequence_path(ED::NodeId vertex);
+    void neighbour_search(const ED::NodeId &vertex,
+                          std::vector<ED::NodeId> &oof_neighbors,
+                          std::vector<ED::NodeId> &outer_neighbors);
+    std::vector<ED::NodeId> maximal_sequence_path(const unsigned int &vertex);
 
     void greedy_matching_mu();
 };
