@@ -81,7 +81,7 @@ std::vector<ED::NodeId> Edmonds::maximal_sequence_path(ED::NodeId vertex) {
     std::vector<ED::NodeId> path{vertex};
 
     //have shown in lecture that the sequence eventually terminated
-    //TODO but does it potentially loop and we have to check for a path or is it all equal at some point!
+    //but does it potentially loop and we have to check for a path or is it all equal at some point!
     //-> yes we have to check it's a path! i.e. doesn't contain loops either
     ED::NodeId t;
     while(true){
@@ -131,19 +131,25 @@ std::vector<ED::NodeId> vector_intersection(const std::vector<ED::NodeId> &v1,
 }
 
 
+void Edmonds::greedy_matching_mu(){
 
+    for (ED::NodeId node_id = 0; node_id < graph.num_nodes(); ++node_id){
+        if (mu[node_id] == node_id){
+            for (ED::NodeId neighbor_id : graph.node(node_id).neighbors()){
+                if (mu[neighbor_id] == neighbor_id){//both vertices are unmatched and neighbours, add matching edge
+                    mu[node_id] = neighbor_id;
+                    mu[neighbor_id] = node_id;
+                    break;
+                }
+            }
+        }
+    }
+}
 
 ED::Graph Edmonds::max_cardinality_matching() {
 
-    //TODO find greedy/heuristic matching
-    ED::Graph greedy_matching_as_graph = greedy_matching(graph);
-    for (ED::NodeId node_id = 0; node_id < graph.num_nodes(); ++node_id)
-    {
-        if (!greedy_matching_as_graph.node(node_id).neighbors().empty()) 
-        {
-            mu[node_id] = greedy_matching_as_graph.node(node_id).neighbors()[0];
-        }
-    }
+    //find greedy/heuristic matching
+    greedy_matching_mu();
 
     // while we find an outer vertex x that has scanned(x) == false
     //we iterate over the steps of tha algorithm, otherwise stop
@@ -182,7 +188,7 @@ neighbourSearch:
                 ED::NodeId v = P_x[2*i + 1];
                 mu[phi[v]] = v;
                 mu[v] =  phi[v];
-            }
+            }//todo maybe node is on both paths and shouldn't get changed twice!
             for (unsigned int i = 0; 2*i + 1 < P_y.size(); ++i) {
                 ED::NodeId v = P_y[2*i + 1];
                 mu[phi[v]] = v;
@@ -217,8 +223,8 @@ neighbourSearch:
             if(P_x_iterator_until_r == P_x.end() or P_y_iterator_until_r == P_y.end()){
                 throw std::runtime_error("Could not find element r in one of the paths.");
             }
-            unsigned int index_r_on_P_x = P_x_iterator_until_r - P_x.begin();
-            unsigned int index_r_on_P_y = P_y_iterator_until_r - P_y.begin();
+            unsigned int index_r_on_P_x = std::distance(P_x.begin(), P_x_iterator_until_r);
+            unsigned int index_r_on_P_y = std::distance(P_y.begin(), P_y_iterator_until_r);
 
             //loop over path until r but only take every odd distance vertex
             for (unsigned int i = 0; 2*i + 1 <= index_r_on_P_x ; ++i) {
@@ -258,6 +264,7 @@ neighbourSearch:
 
     }
 
+
     //convert matching from mu to a subgraph of original graph
     ED::Graph matching_as_graph(graph.num_nodes());
     for (ED::NodeId v = 0; v < graph.num_nodes(); ++v) {
@@ -271,7 +278,14 @@ neighbourSearch:
 
 
 
-
+bool is_matching(const ED::Graph &input_graph){
+    for (ED::NodeId node_id = 0; node_id < input_graph.num_nodes(); ++node_id){
+        if ( input_graph.node(node_id).neighbors().size() > 1){
+            return false;
+        }
+    }
+    return true;
+}
 
 
 
