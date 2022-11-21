@@ -3,6 +3,7 @@
 #include <numeric>
 #include <algorithm>
 #include <set>
+#include <unordered_set>
 
 
 
@@ -82,6 +83,7 @@ bool is_already_on_path(const std::vector<ED::NodeId> &path, const unsigned int 
 
 
 std::vector<ED::NodeId> Edmonds::maximal_sequence_path(const unsigned int &vertex) {
+
     std::vector<ED::NodeId> path{vertex};
 
     //have shown in lecture that the sequence eventually terminated
@@ -126,7 +128,7 @@ std::vector<ED::NodeId> vector_intersection(const std::vector<ED::NodeId> &v1,
     // go over second vector and check if an element is in hashset
     //if so, add it to the intersection
     for (const ED::NodeId & j : v2){
-        if (hash_set.count(j)){
+        if (hash_set.contains(j)){
             intersection.push_back(j);
         }
     }
@@ -258,13 +260,14 @@ ED::Graph Edmonds::max_cardinality_matching() {
                     phi[y] = x;
                 }
                 //change rho for vertices whose rho is in union of partial paths
+                //transform union into set for faster membership check
+                std::unordered_set<ED::NodeId> path_union;
+                path_union.insert(P_x.begin(), P_x_iterator_until_r);
+                path_union.insert(P_y.begin(), P_y_iterator_until_r);
                 for (ED::NodeId v = 0; v < graph.num_nodes(); ++v) {
 
                     //see if rho(v) is in path of x until r
-                    if(std::find(P_x.begin(), P_x.end(), rho[v]) <= P_x_iterator_until_r){
-                        rho[v]= r;
-                    }
-                    if(std::find(P_y.begin(), P_y.end(), rho[v]) <= P_y_iterator_until_r){
+                    if(path_union.contains(rho[v])){
                         rho[v]= r;
                     }
                 }

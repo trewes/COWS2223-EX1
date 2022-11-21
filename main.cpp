@@ -40,11 +40,11 @@ int main(int argc, char** argv)
     std::fstream input_file_graph{argv[2]};
     ED::Graph const graph = ED::Graph::read_dimacs(input_file_graph);
 
-    ED::Graph greedy_matching_as_graph = greedy_matching(graph);
+//    ED::Graph greedy_matching_as_graph = greedy_matching(graph);
 //    std::cout << greedy_matching_as_graph;
-    std::cout << "Greedy found a matching of size " << greedy_matching_as_graph.num_edges() << std::endl;
+//   std::cout << "Greedy found a matching of size " << greedy_matching_as_graph.num_edges() << std::endl;
 
-    std::cout << "That was the result of the greedy algorithm." << std::endl
+    std::cout //<< "That was the result of the greedy algorithm." << std::endl
               << "Now follows the result of Edmonds algorithm." << std::endl;
 
     std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
