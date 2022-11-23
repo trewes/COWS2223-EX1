@@ -56,6 +56,7 @@ ED::NodeId Edmonds::find_unscanned_outer_vertex() {
     return graph.num_nodes();
 }
 
+// finds all out of forest neighbours and all outer neighbours n with rho(n) != rho(vertex)
 void Edmonds::neighbour_search(const ED::NodeId &vertex,
                                std::vector<ED::NodeId> &oof_neighbors,
                                std::vector<ED::NodeId> &outer_neighbors) {
@@ -71,7 +72,7 @@ void Edmonds::neighbour_search(const ED::NodeId &vertex,
 }
 
 
-//checks if vertex t is already on path
+// checks if vertex t is already on path
 bool is_already_on_path(const std::vector<ED::NodeId> &path, const unsigned int &t){
     for(int i = int(path.size())-1; i >= 0; i--){
         if(path[i] == t){
@@ -81,7 +82,7 @@ bool is_already_on_path(const std::vector<ED::NodeId> &path, const unsigned int 
     return false;
 }
 
-
+// computes the path P(vertex) (1.9 in the notes)
 std::vector<ED::NodeId> Edmonds::maximal_sequence_path(const unsigned int &vertex) {
 
     std::vector<ED::NodeId> path{vertex};
@@ -112,7 +113,7 @@ std::vector<ED::NodeId> Edmonds::maximal_sequence_path(const unsigned int &verte
 }
 
 
-
+// helper function for computing intersections of paths
 std::vector<ED::NodeId> vector_intersection(const std::vector<ED::NodeId> &v1,
                                      const std::vector<ED::NodeId> &v2){
     std::vector<ED::NodeId> intersection{};
@@ -135,7 +136,7 @@ std::vector<ED::NodeId> vector_intersection(const std::vector<ED::NodeId> &v1,
     return intersection;
 }
 
-
+// initialise mu with a greedy matching
 void Edmonds::greedy_matching_mu(){
 
     for (ED::NodeId node_id = 0; node_id < graph.num_nodes(); ++node_id){
@@ -152,6 +153,7 @@ void Edmonds::greedy_matching_mu(){
     }
 }
 
+// compute a maximum cardinality matching
 ED::Graph Edmonds::max_cardinality_matching() {
 
     //find greedy/heuristic matching
@@ -291,7 +293,7 @@ ED::Graph Edmonds::max_cardinality_matching() {
 }
 
 
-
+// test code to see if the output is indeed a matching
 bool is_matching(const ED::Graph &input_graph){
     for (ED::NodeId node_id = 0; node_id < input_graph.num_nodes(); ++node_id){
         if ( input_graph.node(node_id).neighbors().size() > 1){
